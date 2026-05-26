@@ -14,11 +14,20 @@ def load_css():
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
-def render_header(title: str, subtitle: str):
-    """Render the dashboard header — title and subtitle line."""
-    st.markdown(f"<h1>{title}</h1>", unsafe_allow_html=True)
+def render_header(title: str, subtitle: str, show_live_badge: bool = True):
+    """
+    Render the dashboard header with title, optional LIVE badge, and subtitle.
+    """
+    live_badge_html = '<span class="live-badge">Live</span>' if show_live_badge else ""
+
     st.markdown(
-        f"<div style='color:#8B9DAE; font-size:0.85rem; margin-bottom:0.5rem;'>{subtitle}</div>",
+        f'''
+        <div class="dashboard-header">
+            <h1>{title}</h1>
+            {live_badge_html}
+        </div>
+        <div class="dashboard-subtitle">{subtitle}</div>
+        ''',
         unsafe_allow_html=True,
     )
 
@@ -31,15 +40,30 @@ def render_top_strip(items: list[dict]):
         {"label": "WTI", "value": "82.15", "change": "+0.42", "direction": "up"}
         direction is "up", "down", or "neutral"
     """
+    # Arrow symbols by direction
+    arrows = {
+        "up": "▲",
+        "down": "▼",
+        "neutral": "▬",
+    }
+
     html_parts = ['<div class="top-strip">']
 
     for item in items:
-        change_class = item.get("direction", "neutral")
+        direction = item.get("direction", "neutral")
         change_text = item.get("change", "")
-        change_html = (
-            f'<span class="top-strip-change {change_class}">{change_text}</span>'
-            if change_text else ""
-        )
+
+        # Build the change indicator with an arrow
+        if change_text:
+            arrow = arrows.get(direction, "")
+            change_html = (
+                f'<span class="top-strip-change {direction}">'
+                f'<span class="trend-arrow">{arrow}</span>'
+                f'{change_text}'
+                f'</span>'
+            )
+        else:
+            change_html = ""
 
         html_parts.append(
             f'<div class="top-strip-item">'

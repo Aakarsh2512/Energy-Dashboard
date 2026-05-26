@@ -1,78 +1,133 @@
 /* ============================================================
-   Energy Trading Dashboard — Custom Styles
+   Energy Trading Dashboard — Custom Styles v2
    Dark professional theme with gold accents
    ============================================================ */
 
-/* Base typography & body */
+/* ============================================================
+   FONTS — Inter for UI, JetBrains Mono for numbers
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ============================================================
+   BASE — body and main background
+   ============================================================ */
 .stApp {
-    background-color: #0B1929;
+    background: radial-gradient(ellipse at top left, #102338 0%, #0B1929 60%, #08111E 100%);
     color: #E8EEF4;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-feature-settings: 'cv11', 'ss03';
 }
 
-/* Hide Streamlit's default chrome we don't need */
+/* Hide Streamlit's default chrome */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 
-/* Remove the default top padding so we own the screen */
+/* Tighter top padding */
 .block-container {
-    padding-top: 1.5rem !important;
+    padding-top: 1rem !important;
     padding-bottom: 1rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
     max-width: 100% !important;
 }
 
-/* Main title */
-h1 {
-    color: #E8EEF4 !important;
-    font-weight: 600 !important;
-    font-size: 1.75rem !important;
-    letter-spacing: -0.5px;
-    margin-bottom: 0.25rem !important;
+/* ============================================================
+   HEADER — title + subtitle + LIVE badge
+   ============================================================ */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
 }
 
-/* Subheaders */
+.dashboard-header h1 {
+    color: #E8EEF4 !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+    letter-spacing: -0.5px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+}
+
+.live-badge {
+    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.live-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: white;
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.dashboard-subtitle {
+    color: #8B9DAE !important;
+    font-size: 0.82rem !important;
+    margin-bottom: 1rem !important;
+    margin-top: 2px !important;
+    font-weight: 400;
+}
+
+/* Hide the default Streamlit h1 since we use a custom one */
+[data-testid="stMarkdownContainer"] h1 {
+    display: none;
+}
+
+/* Other headings */
 h2 {
     color: #E8EEF4 !important;
-    font-size: 1.25rem !important;
+    font-size: 1.1rem !important;
     font-weight: 600 !important;
-    margin-top: 0.5rem !important;
+    margin-top: 0.4rem !important;
 }
 
 h3 {
     color: #2E75B6 !important;
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
     font-weight: 600 !important;
 }
 
-/* Caption (under title) */
-.stCaption, [data-testid="stCaptionContainer"] {
-    color: #8B9DAE !important;
-    font-size: 0.85rem !important;
-}
-
-/* Dividers */
-hr, [data-testid="stDivider"] {
-    border-color: #1F3A5C !important;
-    margin: 0.75rem 0 !important;
-}
-
 /* ============================================================
-   PERSISTENT TOP STRIP — the always-visible quote bar
+   TOP STRIP — the persistent quote bar
    ============================================================ */
 .top-strip {
-    background: linear-gradient(180deg, #0E1F33 0%, #142638 100%);
+    background: linear-gradient(180deg, #112338 0%, #0E1F33 100%);
     border: 1px solid #1F3A5C;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin: 8px 0 16px 0;
+    border-radius: 8px;
+    padding: 14px 8px;
+    margin: 6px 0 14px 0;
+    display: flex;
+    align-items: stretch;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .top-strip-item {
-    display: inline-block;
-    padding: 0 18px;
+    flex: 1;
+    padding: 0 16px;
     border-right: 1px solid #1F3A5C;
     text-align: left;
+    position: relative;
 }
 
 .top-strip-item:last-child {
@@ -81,51 +136,99 @@ hr, [data-testid="stDivider"] {
 
 .top-strip-label {
     color: #8B9DAE;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.68rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
     display: block;
 }
 
 .top-strip-value {
     color: #E8EEF4;
-    font-size: 1.15rem;
+    font-size: 1.35rem;
     font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .top-strip-change {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    margin-left: 8px;
+    margin-left: 6px;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
     font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .top-strip-change.up { color: #2ECC71; }
 .top-strip-change.down { color: #E74C3C; }
 .top-strip-change.neutral { color: #7F8C8D; }
 
+/* The trend arrow icons */
+.trend-arrow {
+    font-size: 0.7rem;
+    line-height: 1;
+    display: inline-block;
+    transform: translateY(-1px);
+}
+
+.top-strip-change.up .trend-arrow {
+    color: #2ECC71;
+    text-shadow: 0 0 6px rgba(46, 204, 113, 0.4);
+}
+
+.top-strip-change.down .trend-arrow {
+    color: #E74C3C;
+    text-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+}
+
+.top-strip-change.neutral .trend-arrow {
+    color: #7F8C8D;
+}
+/* Subtle highlight effect when an item updates */
+.top-strip-item.flash-up {
+    animation: flash-green 1.2s ease-out;
+}
+
+.top-strip-item.flash-down {
+    animation: flash-red 1.2s ease-out;
+}
+
+@keyframes flash-green {
+    0% { background-color: rgba(46, 204, 113, 0.15); }
+    100% { background-color: transparent; }
+}
+
+@keyframes flash-red {
+    0% { background-color: rgba(231, 76, 60, 0.15); }
+    100% { background-color: transparent; }
+}
+
 /* ============================================================
-   TABS — the main navigation
+   TABS — main navigation
    ============================================================ */
 .stTabs [data-baseweb="tab-list"] {
     background-color: #0E1F33;
-    border-radius: 6px;
-    padding: 4px;
-    gap: 2px;
+    border-radius: 8px;
+    padding: 5px;
+    gap: 3px;
     border: 1px solid #1F3A5C;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .stTabs [data-baseweb="tab"] {
     background-color: transparent;
     color: #8B9DAE;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 4px;
+    padding: 9px 18px;
+    border-radius: 5px;
     border: none;
+    transition: all 0.15s ease;
 }
 
 .stTabs [data-baseweb="tab"]:hover {
@@ -134,165 +237,73 @@ hr, [data-testid="stDivider"] {
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: #1F4E78 !important;
+    background: linear-gradient(135deg, #1F4E78 0%, #2E5C8A 100%) !important;
     color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(46, 117, 182, 0.3);
 }
 
-/* Special styling for the Replay tab (last one) — gold accent */
-.stTabs [data-baseweb="tab-list"] [data-baseweb="tab"]:last-child[aria-selected="true"] {
-    background-color: #C8932A !important;
+/* Hide the default red Streamlit underline on active tab */
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: transparent !important;
+    height: 0 !important;
 }
 
-/* Tab content area */
 .stTabs [data-baseweb="tab-panel"] {
     padding-top: 1rem;
 }
 
 /* ============================================================
-   PANELS — the boxes that hold each feature
+   INFO BOXES (the "coming soon" placeholders)
    ============================================================ */
-.panel {
-    background-color: #142638;
-    border: 1px solid #1F3A5C;
-    border-radius: 6px;
-    padding: 16px 18px;
-    margin-bottom: 12px;
-    transition: border-color 0.2s ease;
-}
-
-.panel:hover {
-    border-color: #2E75B6;
-}
-
-.panel-unique {
-    background-color: #1A1F1A;
-    border: 1px solid #C8932A;
-    border-radius: 6px;
-    padding: 16px 18px;
-    margin-bottom: 12px;
-    box-shadow: 0 0 0 1px rgba(200, 147, 42, 0.15);
-}
-
-.panel-title {
-    color: #2E75B6;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #1F3A5C;
-}
-
-.panel-unique .panel-title {
-    color: #C8932A;
-    border-bottom-color: #3D3219;
-}
-
-.panel-unique .panel-title::before {
-    content: "★ ";
-    color: #C8932A;
-}
-
-/* ============================================================
-   INFO BOXES (the "coming soon" placeholders we'll replace)
-   ============================================================ */
-.stAlert {
-    background-color: #142638 !important;
+[data-testid="stAlert"] {
+    background: linear-gradient(135deg, #142638 0%, #1A2D44 100%) !important;
     border: 1px solid #1F3A5C !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     color: #8B9DAE !important;
+    padding: 14px 18px !important;
 }
 
-.stAlert[data-baseweb="notification"] svg {
+[data-testid="stAlert"] svg {
     color: #2E75B6 !important;
 }
 
-/* ============================================================
-   METRICS (Streamlit's default metric component)
-   ============================================================ */
-[data-testid="stMetric"] {
-    background-color: #142638;
-    border: 1px solid #1F3A5C;
-    border-radius: 6px;
-    padding: 10px 14px;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #8B9DAE !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500 !important;
-}
-
-[data-testid="stMetricValue"] {
-    color: #E8EEF4 !important;
-    font-size: 1.4rem !important;
-    font-weight: 600 !important;
-    font-variant-numeric: tabular-nums;
-}
-
-[data-testid="stMetricDelta"] {
-    font-size: 0.8rem !important;
-    font-weight: 500 !important;
-    font-variant-numeric: tabular-nums;
+[data-testid="stAlert"] p {
+    color: #B8C5D3 !important;
+    font-size: 0.88rem !important;
 }
 
 /* ============================================================
-   STATUS BAR / FOOTER
+   STATUS BAR
    ============================================================ */
 .status-bar {
-    background-color: #0E1F33;
-    border-top: 1px solid #1F3A5C;
-    padding: 8px 16px;
-    font-size: 0.75rem;
+    background: linear-gradient(180deg, #0E1F33 0%, #08111E 100%);
+    border: 1px solid #1F3A5C;
+    padding: 9px 18px;
+    font-size: 0.72rem;
     color: #8B9DAE;
     display: flex;
     justify-content: space-between;
-    margin-top: 16px;
-    border-radius: 0 0 4px 4px;
+    margin-top: 18px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    letter-spacing: 0.3px;
 }
 
 .status-indicator {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background-color: #2ECC71;
-    margin-right: 6px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    margin-right: 7px;
+    box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+    animation: pulse-dot 2s infinite;
 }
 
 /* ============================================================
-   PLOTLY CHARTS — make them blend with the dark theme
+   SCROLLBARS
    ============================================================ */
-.js-plotly-plot {
-    background-color: transparent !important;
-}
-
-/* ============================================================
-   SCROLLBARS — make them less ugly on dark background
-   ============================================================ */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #0B1929;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #1F3A5C;
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #2E75B6;
-}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0B1929; }
+::-webkit-scrollbar-thumb { background: #1F3A5C; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #2E75B6; }
