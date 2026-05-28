@@ -42,7 +42,7 @@ header {visibility: hidden;}
     margin-bottom: 4px;
 }
 
-.dashboard-header h1 {
+.dashboard-title {
     color: #E8EEF4 !important;
     font-weight: 700 !important;
     font-size: 1.5rem !important;
@@ -50,6 +50,7 @@ header {visibility: hidden;}
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1.2 !important;
+    display: inline-block;
 }
 
 .live-badge {
@@ -87,11 +88,6 @@ header {visibility: hidden;}
     margin-bottom: 1rem !important;
     margin-top: 2px !important;
     font-weight: 400;
-}
-
-/* Hide the default Streamlit h1 since we use a custom one */
-[data-testid="stMarkdownContainer"] h1 {
-    display: none;
 }
 
 /* Other headings */
@@ -307,3 +303,605 @@ h3 {
 ::-webkit-scrollbar-track { background: #0B1929; }
 ::-webkit-scrollbar-thumb { background: #1F3A5C; border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: #2E75B6; }
+/* ============================================================
+   PANEL — base styling for content panels (used in tabs)
+   ============================================================ */
+.panel {
+    background: linear-gradient(180deg, #142638 0%, #112030 100%);
+    border: 1px solid #1F3A5C;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.panel-title {
+    color: #2E75B6;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1F3A5C;
+}
+
+/* ============================================================
+   PRICE CARDS — individual instrument tiles in the price grid
+   ============================================================ */
+
+.price-card-label {
+    color: #8B9DAE;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+}
+
+.price-card-value {
+    color: #E8EEF4;
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.price-card-value.muted {
+    color: #5B6E80;
+}
+
+.price-card-change {
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.price-card-change.up { color: #2ECC71; }
+.price-card-change.down { color: #E74C3C; }
+.price-card-change.neutral { color: #7F8C8D; }
+
+.price-card-pct {
+    color: inherit;
+    opacity: 0.85;
+    font-size: 0.7rem;
+}
+
+.price-card-zscore {
+    color: #5B6E80;
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #1F3A5C;
+    padding-top: 5px;
+    margin-top: 2px;
+}
+/* ============================================================
+   MACRO TILES — compact tiles in cross-asset macro panel
+   ============================================================ */
+.macro-tile {
+    background-color: #0E1F33;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.macro-tile-label {
+    color: #8B9DAE;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.macro-tile-value {
+    color: #E8EEF4;
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.macro-tile-value.muted {
+    color: #5B6E80;
+}
+
+.macro-tile-change {
+    font-size: 0.68rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    margin-top: 3px;
+}
+
+.macro-tile-change.up { color: #2ECC71; }
+.macro-tile-change.down { color: #E74C3C; }
+.macro-tile-change.neutral { color: #7F8C8D; }
+/* ============================================================
+   DOM (Depth of Market) — order book display
+   ============================================================ */
+.dom-container {
+    background-color: #08111E;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 6px;
+}
+
+.dom-row:last-child {
+    border-bottom: none;
+}
+
+.dom-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    opacity: 0.18;
+    z-index: 0;
+}
+
+.dom-ask .dom-bar {
+    background-color: #E74C3C;
+}
+
+.dom-bid .dom-bar {
+    background-color: #2ECC71;
+}
+
+.dom-price {
+    z-index: 1;
+    font-weight: 600;
+}
+
+.dom-ask .dom-price { color: #E74C3C; }
+.dom-bid .dom-price { color: #2ECC71; }
+
+.dom-size {
+    z-index: 1;
+    color: #B8C5D3;
+}
+
+.dom-spread-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background-color: #0E1F33;
+    border-top: 1px solid #2E75B6;
+    border-bottom: 1px solid #2E75B6;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #2E75B6;
+    letter-spacing: 0.8px;
+    margin: 2px 0;
+}
+
+/* ============================================================
+   EXECUTION STATS — right column of execution panel
+   ============================================================ */
+.exec-stats {
+    background-color: #08111E;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 10px 14px;
+}
+
+.exec-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(31, 58, 92, 0.4);
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-size: 0.78rem;
+}
+
+.exec-stat-row:last-child {
+    border-bottom: none;
+}
+
+.exec-stat-label {
+    color: #8B9DAE;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.exec-stat-value {
+    color: #E8EEF4;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.exec-stat-value.up { color: #2ECC71; }
+.exec-stat-value.down { color: #E74C3C; }
+.exec-stat-value.neutral { color: #7F8C8D; }
+/* ============================================================
+   PRICE GRID — 2-column compact layout
+   ============================================================ */
+.price-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.price-card-compact {
+    background-color: #0E1F33;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 8px 11px;
+    transition: border-color 0.15s ease;
+}
+
+.price-card-compact:hover {
+    border-color: #2E75B6;
+}
+
+.price-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+
+.price-card-label {
+    color: #8B9DAE;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.price-card-value {
+    color: #E8EEF4;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    margin-bottom: 3px;
+}
+
+.price-card-value.muted { color: #5B6E80; }
+
+.price-card-change {
+    font-size: 0.7rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-card-change.up { color: #2ECC71; }
+.price-card-change.down { color: #E74C3C; }
+.price-card-change.neutral { color: #7F8C8D; }
+
+.price-card-pct {
+    opacity: 0.8;
+    font-size: 0.65rem;
+}
+
+/* ============================================================
+   MACRO GRID — 5 horizontal compact tiles
+   ============================================================ */
+.macro-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.macro-tile {
+    background-color: #0E1F33;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 7px 9px;
+}
+
+.macro-tile-label {
+    color: #8B9DAE;
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+}
+
+.macro-tile-value {
+    color: #E8EEF4;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.macro-tile-value.muted { color: #5B6E80; }
+
+.macro-tile-change {
+    font-size: 0.62rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    margin-top: 2px;
+}
+
+.macro-tile-change.up { color: #2ECC71; }
+.macro-tile-change.down { color: #E74C3C; }
+.macro-tile-change.neutral { color: #7F8C8D; }
+
+/* ============================================================
+   EXECUTION PANEL — DOM + stats grid
+   ============================================================ */
+.exec-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 10px;
+}
+
+.dom-container {
+    background-color: #08111E;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+.dom-row {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    overflow: hidden;
+    height: 22px;
+}
+
+.dom-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    opacity: 0.2;
+    z-index: 0;
+}
+
+.dom-ask .dom-bar { background-color: #E74C3C; }
+.dom-bid .dom-bar { background-color: #2ECC71; }
+
+.dom-price { z-index: 1; font-weight: 600; }
+.dom-ask .dom-price { color: #E74C3C; }
+.dom-bid .dom-price { color: #2ECC71; }
+
+.dom-size { z-index: 1; color: #B8C5D3; }
+
+.dom-spread-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 8px;
+    background-color: #0E1F33;
+    border-top: 1px solid #2E75B6;
+    border-bottom: 1px solid #2E75B6;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #2E75B6;
+    letter-spacing: 0.8px;
+}
+
+.exec-stats {
+    background-color: #08111E;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 8px 11px;
+}
+
+.exec-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(31, 58, 92, 0.4);
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-size: 0.75rem;
+}
+
+.exec-stat-row:last-child { border-bottom: none; }
+
+.exec-stat-label {
+    color: #8B9DAE;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.exec-stat-value {
+    color: #E8EEF4;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.exec-stat-value.up { color: #2ECC71; }
+.exec-stat-value.down { color: #E74C3C; }
+.exec-stat-value.neutral { color: #7F8C8D; }
+/* ============================================================
+   Z-SCORE BADGE — highlighted analytical indicator
+   ============================================================ */
+.zscore-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background-color: rgba(11, 25, 41, 0.5);
+    border: 1px solid #1F3A5C;
+}
+
+.zscore-value {
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.zscore-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.52rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 1px;
+    opacity: 0.85;
+}
+
+/* Z-score colour variants */
+.zscore-badge.z-cold {
+    background-color: rgba(31, 119, 180, 0.12);
+    border-color: rgba(31, 119, 180, 0.4);
+}
+.zscore-badge.z-cold .zscore-value,
+.zscore-badge.z-cold .zscore-label {
+    color: #5BA8D9;
+}
+
+.zscore-badge.z-mid {
+    background-color: rgba(91, 110, 128, 0.1);
+    border-color: rgba(91, 110, 128, 0.4);
+}
+.zscore-badge.z-mid .zscore-value,
+.zscore-badge.z-mid .zscore-label {
+    color: #8B9DAE;
+}
+
+.zscore-badge.z-hot {
+    background-color: rgba(231, 76, 60, 0.12);
+    border-color: rgba(231, 76, 60, 0.4);
+}
+.zscore-badge.z-hot .zscore-value,
+.zscore-badge.z-hot .zscore-label {
+    color: #E67E22;
+}
+
+/* Extreme z-scores get a subtle glow effect */
+.zscore-badge.z-extreme {
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.25);
+    animation: zscore-pulse 2.5s ease-in-out infinite;
+}
+
+.zscore-badge.z-extreme.z-cold {
+    box-shadow: 0 0 8px rgba(31, 119, 180, 0.35);
+}
+
+@keyframes zscore-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+}
+
+/* Elevated z-scores get a softer indicator */
+.zscore-badge.z-elevated {
+    border-width: 1.5px;
+}
+/* ============================================================
+   SPREAD ROWS — calendar and inter-product spreads
+   ============================================================ */
+.spread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.spread-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 11px;
+    background-color: #0E1F33;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    font-size: 0.78rem;
+}
+
+.spread-name {
+    color: #8B9DAE;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.spread-value {
+    color: #E8EEF4;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+    min-width: 60px;
+}
+
+.spread-change {
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-align: right;
+    min-width: 70px;
+}
+
+.spread-change.up { color: #2ECC71; }
+.spread-change.down { color: #E74C3C; }
+.spread-change.neutral { color: #7F8C8D; }
+
+.spread-flag {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+.spread-flag.spread-normal {
+    background-color: rgba(127, 140, 141, 0.15);
+    color: #8B9DAE;
+}
+
+.spread-flag.spread-elevated {
+    background-color: rgba(230, 126, 34, 0.15);
+    color: #E67E22;
+    border: 1px solid rgba(230, 126, 34, 0.3);
+}
+
+.spread-flag.spread-extreme {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #E74C3C;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    animation: zscore-pulse 2.5s ease-in-out infinite;
+}
+
+.spread-footnote {
+    color: #5B6E80;
+    font-size: 0.65rem;
+    margin-top: 8px;
+    font-style: italic;
+}
