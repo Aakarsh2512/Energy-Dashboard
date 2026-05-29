@@ -905,3 +905,185 @@ h3 {
     margin-top: 8px;
     font-style: italic;
 }
+/* ============================================================
+   BIG STAT — large headline number in a panel
+   ============================================================ */
+.big-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.big-stat-value {
+    color: #E8EEF4;
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.big-stat-unit {
+    color: #8B9DAE;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.big-stat-context {
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* ============================================================
+   SELECTBOX — styled dropdowns
+   ============================================================ */
+.stSelectbox [data-baseweb="select"] {
+    background-color: #0E1F33 !important;
+    border: 1px solid #1F3A5C !important;
+    border-radius: 5px !important;
+}
+
+.stSelectbox [data-baseweb="select"] > div {
+    background-color: transparent !important;
+    color: #E8EEF4 !important;
+    font-size: 0.85rem !important;
+}
+/* ============================================================
+   NEWS CARDS — full view on News tab
+   ============================================================ */
+.news-card {
+    background-color: #0E1F33;
+    border: 1px solid #1F3A5C;
+    border-radius: 5px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s ease;
+}
+
+.news-card:hover {
+    border-color: #2E75B6;
+}
+
+.news-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.news-direction {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.news-magnitude {
+    font-size: 0.62rem;
+    color: #8B9DAE;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 7px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+}
+
+.news-confidence {
+    font-size: 0.65rem;
+    color: #5B6E80;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.news-contracts {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.news-contract-tag {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #2E75B6;
+    padding: 1px 6px;
+    background: rgba(46, 117, 182, 0.12);
+    border: 1px solid rgba(46, 117, 182, 0.3);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.news-title {
+    color: #E8EEF4;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.35;
+    margin-bottom: 4px;
+}
+
+.news-reaction {
+    color: #8B9DAE;
+    font-size: 0.72rem;
+    font-style: italic;
+    line-height: 1.3;
+}
+
+/* ============================================================
+   NEWS COMPACT — for Markets tab right column
+   ============================================================ */
+.news-compact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.news-compact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 6px 9px;
+    background-color: #0E1F33;
+    border-radius: 4px;
+}
+
+.news-compact-arrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.news-compact-title {
+    color: #B8C5D3;
+    font-size: 0.72rem;
+    line-height: 1.3;
+}
+/* ============================================================
+   TEXT INPUT (search/filter boxes)
+   ============================================================ */
+.stTextInput [data-baseweb="input"] {
+    background-color: #0E1F33 !important;
+    border: 1px solid #1F3A5C !important;
+    border-radius: 5px !important;
+}
+
+.stTextInput input {
+    background-color: transparent !important;
+    color: #E8EEF4 !important;
+    font-size: 0.85rem !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.stTextInput input::placeholder {
+    color: #5B6E80 !important;
+    font-style: italic;
+}
+
+.stTextInput [data-baseweb="input"]:focus-within {
+    border-color: #2E75B6 !important;
+}

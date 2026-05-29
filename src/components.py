@@ -5,7 +5,7 @@ Each function renders a styled element. Keeps app.py clean.
 
 import streamlit as st
 from pathlib import Path
-
+import pandas as pd
 
 def load_css():
     """Inject the custom CSS into the page. Call this once at the top of app.py."""
@@ -543,6 +543,739 @@ def render_interproduct_spreads_panel(market_data: dict):
         f'<div class="panel">'
         f'<div class="panel-title">Inter-Product Spreads</div>'
         f'<div class="spread-list">{rows_html}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+    
+def render_inventory_tab(market_data: dict):
+    import plotly.graph_objects as go
+    from eia_data import (
+        INVENTORY_SERIES, fetch_series,
+        build_seasonality_envelope, compute_surprise, current_vs_5yr_avg
+    )
+
+    # ============================================================
+    # CONTROLS — instrument selector and date range
+    # ============================================================
+
+    instrument_labels = {k: v["label"] for k, v in INVENTORY_SERIES.items()}
+
+    col_sel, col_range, col_blank = st.columns([2, 1.5, 3])
+
+    with col_sel:
+        selected_key = st.selectbox(
+            "Instrument",
+            options=list(instrument_labels.keys()),
+            format_func=lambda k: instrument_labels[k],
+            label_visibility="collapsed",
+        )
+
+    with col_range:
+        date_range = st.selectbox(
+            "Range",
+            options=["4 weeks", "12 weeks", "52 weeks", "5 years", "All"],
+            index=3,
+            label_visibility="collapsed",
+        )
+
+    # ============================================================
+    # FETCH
+    # ============================================================
+
+    df = fetch_series(selected_key, start_date="2018-01-01")
+
+    if df is None or len(df) == 0:
+        st.markdown(
+            '<div class="panel">'
+            '<div class="panel-title">Inventory</div>'
+            '<div style="color:#8B9DAE; padding:30px; text-align:center;">'
+            'Could not fetch EIA data. Check your API key in .env'
+            '</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    spec = INVENTORY_SERIES[selected_key]
+
+    # Filter to date range
+    range_map = {
+        "4 weeks": 28, "12 weeks": 84, "52 weeks": 365,
+        "5 years": 365 * 5, "All": None,
+    }
+    days_back = range_map[date_range]
+    if days_back:
+        cutoff = df["date"].max() - pd.Timedelta(days=days_back)
+        df_filtered = df[df["date"] >= cutoff]
+    else:
+        df_filtered = df
+
+    # ============================================================
+    # LAYOUT: chart left, stats right
+    # ============================================================
+
+    left, right = st.columns([2.4, 1])
+
+    with left:
+        st.markdown(
+            f'<div class="panel" style="padding-bottom:6px;">'
+            f'<div class="panel-title">{spec["label"]}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Build the main chart with 5-year envelope
+        envelope = build_seasonality_envelope(df, years_back=5)
+
+        fig = go.Figure()
+
+        # 5-year max (invisible top of band)
+        fig.add_trace(go.Scatter(
+            x=envelope["week"], y=envelope["hist_max"],
+            line=dict(width=0), showlegend=False, hoverinfo='skip',
+        ))
+        # 5-year min + fill
+        fig.add_trace(go.Scatter(
+            x=envelope["week"], y=envelope["hist_min"],
+            line=dict(width=0), fill='tonexty',
+            fillcolor='rgba(46, 117, 182, 0.15)',
+            name='5-yr range', hoverinfo='skip',
+        ))
+        # 5-year average
+        fig.add_trace(go.Scatter(
+            x=envelope["week"], y=envelope["hist_avg"],
+            line=dict(color='#7F8C8D', width=1.5, dash='dash'),
+            name='5-yr avg',
+        ))
+        # Current year
+        current_only = envelope[["week", "current"]].dropna()
+        fig.add_trace(go.Scatter(
+            x=current_only["week"], y=current_only["current"],
+            line=dict(color=spec["color"], width=2.5),
+            name='Current year',
+            mode='lines+markers',
+            marker=dict(size=4),
+        ))
+
+        fig.update_layout(
+            height=380,
+            margin=dict(l=40, r=20, t=10, b=40),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#8B9DAE", family="Inter, sans-serif", size=11),
+            legend=dict(
+                orientation="h", yanchor="top", y=1.12, xanchor="right", x=1,
+                font=dict(size=10),
+            ),
+            xaxis=dict(
+                title="Week of year",
+                gridcolor="rgba(31, 58, 92, 0.4)",
+                zeroline=False,
+            ),
+            yaxis=dict(
+                title=spec["unit"],
+                gridcolor="rgba(31, 58, 92, 0.4)",
+                zeroline=False,
+            ),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        # Stat panels
+        comparison = current_vs_5yr_avg(df)
+        surprise = compute_surprise(df)
+
+        # Current vs 5-yr avg
+        if comparison:
+            diff_color = "#E74C3C" if comparison["is_above_avg"] else "#5BA8D9"
+            arrow = "▲" if comparison["is_above_avg"] else "▼"
+            sign = "+" if comparison["diff"] > 0 else ""
+            unit = spec["unit"]
+
+            st.markdown(
+                f'<div class="panel">'
+                f'<div class="panel-title">Current vs 5-yr avg</div>'
+                f'<div class="big-stat">'
+                f'<span class="big-stat-value">{comparison["current"]:,.0f}</span>'
+                f'<span class="big-stat-unit">{unit}</span>'
+                f'</div>'
+                f'<div class="big-stat-context" style="color:{diff_color};">'
+                f'{arrow} {sign}{comparison["diff"]:,.0f} {unit} '
+                f'({sign}{comparison["diff_pct"]:.1f}%) vs 5-yr avg'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+        # Surprise
+        if surprise:
+            abs_z = abs(surprise["zscore"])
+            if abs_z >= 2:
+                surprise_label = "MAJOR SURPRISE"
+                surprise_class = "spread-extreme"
+            elif abs_z >= 1:
+                surprise_label = "ELEVATED"
+                surprise_class = "spread-elevated"
+            else:
+                surprise_label = "AS EXPECTED"
+                surprise_class = "spread-normal"
+
+            sign_act = "+" if surprise["actual_change"] >= 0 else ""
+            sign_exp = "+" if surprise["expected_change"] >= 0 else ""
+
+            st.markdown(
+                f'<div class="panel">'
+                f'<div class="panel-title">Latest release surprise</div>'
+                f'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Release date</span>'
+                f'<span style="color:#E8EEF4; font-family:JetBrains Mono; font-size:0.78rem;">'
+                f'{surprise["date"].strftime("%b %d %Y")}</span>'
+                f'</div>'
+                f'<div style="display:flex; justify-content:space-between; margin-bottom:6px;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Actual change</span>'
+                f'<span style="color:#E8EEF4; font-family:JetBrains Mono; font-size:0.78rem;">'
+                f'{sign_act}{surprise["actual_change"]:,.0f}</span>'
+                f'</div>'
+                f'<div style="display:flex; justify-content:space-between; margin-bottom:6px;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">4-wk avg change</span>'
+                f'<span style="color:#8B9DAE; font-family:JetBrains Mono; font-size:0.78rem;">'
+                f'{sign_exp}{surprise["expected_change"]:,.0f}</span>'
+                f'</div>'
+                f'<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Surprise (z-score)</span>'
+                f'<span class="spread-flag {surprise_class}">{surprise["zscore"]:+.2f}σ • {surprise_label}</span>'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    # ============================================================
+    # SECOND ROW: European gas storage
+    # ============================================================
+
+    render_european_gas_storage_panel()
+
+
+def render_european_gas_storage_panel():
+    """Render European gas storage from GIE AGSI+."""
+    import plotly.graph_objects as go
+    from european_storage import fetch_european_storage_overall
+
+    df = fetch_european_storage_overall()
+
+    if df is None or len(df) == 0:
+        return
+
+    latest = df.iloc[-1]
+    latest_pct = latest["full_pct"]
+
+    # Color based on storage level (winter risk indicator)
+    if latest_pct >= 80:
+        pct_color = "#2ECC71"
+        pct_label = "WELL-SUPPLIED"
+    elif latest_pct >= 50:
+        pct_color = "#F39C12"
+        pct_label = "MODERATE"
+    else:
+        pct_color = "#E74C3C"
+        pct_label = "LOW — winter risk"
+
+    left, right = st.columns([2.4, 1])
+
+    with left:
+        st.markdown(
+            '<div class="panel" style="padding-bottom:6px;">'
+            '<div class="panel-title">European Gas Storage (GIE AGSI+, free)</div>',
+            unsafe_allow_html=True,
+        )
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df["date"],
+            y=df["full_pct"],
+            mode='lines',
+            line=dict(color='#9B59B6', width=2.5),
+            fill='tozeroy',
+            fillcolor='rgba(155, 89, 182, 0.12)',
+            name='% Full',
+        ))
+        fig.add_hline(y=80, line_dash="dot", line_color="#2ECC71",
+                      annotation_text="80% — well-supplied",
+                      annotation_position="right",
+                      annotation_font_color="#2ECC71",
+                      annotation_font_size=10)
+        fig.add_hline(y=50, line_dash="dot", line_color="#E74C3C",
+                      annotation_text="50% — winter risk",
+                      annotation_position="right",
+                      annotation_font_color="#E74C3C",
+                      annotation_font_size=10)
+
+        fig.update_layout(
+            height=300,
+            margin=dict(l=40, r=20, t=10, b=40),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#8B9DAE", family="Inter, sans-serif", size=11),
+            showlegend=False,
+            xaxis=dict(gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False),
+            yaxis=dict(title="% full", gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False, range=[0, 105]),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown(
+            f'<div class="panel">'
+            f'<div class="panel-title">Current storage</div>'
+            f'<div class="big-stat">'
+            f'<span class="big-stat-value">{latest_pct:.1f}</span>'
+            f'<span class="big-stat-unit">%</span>'
+            f'</div>'
+            f'<div class="big-stat-context" style="color:{pct_color};">'
+            f'{pct_label}'
+            f'</div>'
+            f'<div style="display:flex; justify-content:space-between; margin-top:10px; '
+            f'padding-top:8px; border-top:1px solid #1F3A5C;">'
+            f'<span style="color:#8B9DAE; font-size:0.72rem;">Total</span>'
+            f'<span style="color:#E8EEF4; font-family:JetBrains Mono; font-size:0.78rem;">'
+            f'{latest["gas_in_storage"]:,.0f} TWh</span>'
+            f'</div>'
+            f'<div style="display:flex; justify-content:space-between; margin-top:6px;">'
+            f'<span style="color:#8B9DAE; font-size:0.72rem;">As of</span>'
+            f'<span style="color:#E8EEF4; font-family:JetBrains Mono; font-size:0.78rem;">'
+            f'{latest["date"].strftime("%b %d")}</span>'
+            f'</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+def render_seasonality_tab(market_data: dict):
+    """Render the full Seasonality tab."""
+    import plotly.graph_objects as go
+    import plotly.express as px
+    from seasonality import (
+        SEASONALITY_INSTRUMENTS, MONTH_NAMES,
+        fetch_long_history, build_year_overlay, build_monthly_returns,
+        build_average_seasonal_path, best_worst_months,
+        current_month_seasonal_context,
+    )
+
+    # ============================================================
+    # CONTROLS
+    # ============================================================
+
+    inst_labels = {k: v["label"] for k, v in SEASONALITY_INSTRUMENTS.items()}
+
+    col_sel, col_years, col_blank = st.columns([2, 1.5, 3])
+
+    with col_sel:
+        selected = st.selectbox(
+            "Instrument",
+            options=list(inst_labels.keys()),
+            format_func=lambda k: inst_labels[k],
+            label_visibility="collapsed",
+            key="seasonality_instrument",
+        )
+
+    with col_years:
+        years_show = st.selectbox(
+            "Years to overlay",
+            options=[3, 5, 8],
+            index=1,
+            label_visibility="collapsed",
+            key="seasonality_years",
+        )
+
+    ticker = SEASONALITY_INSTRUMENTS[selected]["ticker"]
+    df = fetch_long_history(ticker, years=8)
+
+    if df is None:
+        st.markdown(
+            '<div class="panel"><div class="panel-title">Seasonality</div>'
+            '<div style="color:#8B9DAE; padding:30px; text-align:center;">'
+            'Could not fetch historical data.</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    # ============================================================
+    # ROW 1: Year overlay (left) + current month context (right)
+    # ============================================================
+
+    left, right = st.columns([2.4, 1])
+
+    with left:
+        st.markdown(
+            f'<div class="panel" style="padding-bottom:6px;">'
+            f'<div class="panel-title">{inst_labels[selected]} — Year Overlay (normalized)</div>',
+            unsafe_allow_html=True,
+        )
+
+        overlays = build_year_overlay(df, years_to_show=years_show)
+        current_year = max(overlays.keys())
+
+        fig = go.Figure()
+        for year, data in overlays.items():
+            is_current = (year == current_year)
+            fig.add_trace(go.Scatter(
+                x=data["day_of_year"],
+                y=data["normalized"],
+                name=str(year),
+                line=dict(
+                    width=3 if is_current else 1.2,
+                    color="#E67E22" if is_current else "#5B6E80",
+                ),
+                opacity=1.0 if is_current else 0.4,
+            ))
+
+        fig.update_layout(
+            height=360,
+            margin=dict(l=40, r=20, t=10, b=40),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#8B9DAE", family="Inter, sans-serif", size=11),
+            legend=dict(orientation="h", yanchor="top", y=1.12, font=dict(size=10)),
+            xaxis=dict(title="Day of year", gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False),
+            yaxis=dict(title="% of year start (100 = Jan 1)", gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        context = current_month_seasonal_context(df)
+        if context:
+            ret_color = "#2ECC71" if context["avg_return"] > 0 else "#E74C3C"
+            ret_sign = "+" if context["avg_return"] > 0 else ""
+
+            st.markdown(
+                f'<div class="panel">'
+                f'<div class="panel-title">{context["month_name"]} — typical behaviour</div>'
+                f'<div class="big-stat">'
+                f'<span class="big-stat-value" style="color:{ret_color};">'
+                f'{ret_sign}{context["avg_return"]:.1f}%</span>'
+                f'</div>'
+                f'<div class="big-stat-context" style="color:#8B9DAE;">'
+                f'avg return in {context["month_name"]} over {context["years_count"]} years'
+                f'</div>'
+                f'<div style="display:flex; justify-content:space-between; margin-top:12px; '
+                f'padding-top:8px; border-top:1px solid #1F3A5C;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Win rate</span>'
+                f'<span style="color:#E8EEF4; font-family:JetBrains Mono; font-size:0.85rem;">'
+                f'{context["win_rate"]:.0f}%</span>'
+                f'</div>'
+                f'<div style="color:#5B6E80; font-size:0.65rem; margin-top:8px; font-style:italic;">'
+                f'% of past years where {context["month_name"]} closed positive'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+        # Best/worst months
+        monthly_pivot = build_monthly_returns(df)
+        if monthly_pivot is not None:
+            bw = best_worst_months(monthly_pivot)
+            st.markdown(
+                f'<div class="panel">'
+                f'<div class="panel-title">Seasonal extremes</div>'
+                f'<div style="display:flex; justify-content:space-between; margin-bottom:8px;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Best month</span>'
+                f'<span style="color:#2ECC71; font-family:JetBrains Mono; font-size:0.8rem;">'
+                f'{bw["best_month"]} (+{bw["best_return"]:.1f}%)</span>'
+                f'</div>'
+                f'<div style="display:flex; justify-content:space-between;">'
+                f'<span style="color:#8B9DAE; font-size:0.72rem;">Worst month</span>'
+                f'<span style="color:#E74C3C; font-family:JetBrains Mono; font-size:0.8rem;">'
+                f'{bw["worst_month"]} ({bw["worst_return"]:.1f}%)</span>'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    # ============================================================
+    # ROW 2: Monthly returns heatmap (full width)
+    # ============================================================
+
+    # For the heatmap specifically, use only complete years (clean alignment)
+    heatmap_pivot = build_monthly_returns(df, drop_partial_years=True)
+
+    if heatmap_pivot is not None and len(heatmap_pivot) > 0:
+        st.markdown(
+            '<div class="panel" style="padding-bottom:6px;">'
+            '<div class="panel-title">Monthly Returns Heatmap (complete years only)</div>',
+            unsafe_allow_html=True,
+        )
+
+        heatmap_data = heatmap_pivot.copy()
+        heatmap_data.columns = [MONTH_NAMES[int(c) - 1] for c in heatmap_data.columns]
+        heatmap_data = heatmap_data.sort_index(ascending=False)  # recent years on top
+
+        fig = px.imshow(
+            heatmap_data,
+            color_continuous_scale=["#C0392B", "#142638", "#27AE60"],
+            color_continuous_midpoint=0,
+            aspect="auto",
+            labels=dict(color="Return %"),
+            text_auto=".1f",
+        )
+        fig.update_layout(
+            height=320,
+            margin=dict(l=40, r=20, t=10, b=20),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#8B9DAE", family="Inter, sans-serif", size=10),
+            coloraxis_colorbar=dict(title="%", thickness=12, len=0.7),
+        )
+        fig.update_xaxes(side="top", tickfont=dict(size=10))
+        fig.update_yaxes(tickfont=dict(size=10))
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ============================================================
+    # ROW 3: Average seasonal path with confidence band
+    # ============================================================
+
+    seasonal = build_average_seasonal_path(df, years_back=8)
+    if seasonal is not None:
+        st.markdown(
+            '<div class="panel" style="padding-bottom:6px;">'
+            '<div class="panel-title">Average Seasonal Path (8-year, with ±1σ band)</div>',
+            unsafe_allow_html=True,
+        )
+
+        fig = go.Figure()
+        # Upper band
+        fig.add_trace(go.Scatter(
+            x=seasonal["day_of_year"], y=seasonal["upper"],
+            line=dict(width=0), showlegend=False, hoverinfo='skip',
+        ))
+        # Lower band + fill
+        fig.add_trace(go.Scatter(
+            x=seasonal["day_of_year"], y=seasonal["lower"],
+            line=dict(width=0), fill='tonexty',
+            fillcolor='rgba(46, 117, 182, 0.15)',
+            name='±1σ', hoverinfo='skip',
+        ))
+        # Average
+        fig.add_trace(go.Scatter(
+            x=seasonal["day_of_year"], y=seasonal["avg"],
+            line=dict(color="#E67E22", width=2.5),
+            name='Average path',
+        ))
+
+        fig.update_layout(
+            height=320,
+            margin=dict(l=40, r=20, t=10, b=40),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#8B9DAE", family="Inter, sans-serif", size=11),
+            showlegend=False,
+            xaxis=dict(title="Day of year", gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False),
+            yaxis=dict(title="% of year start (100 = Jan 1)", gridcolor="rgba(31, 58, 92, 0.4)", zeroline=False),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        st.markdown('</div>', unsafe_allow_html=True)
+
+def render_news_tab(market_data: dict):
+    """Render the full News & Events tab with keyword filtering."""
+    from news_data import fetch_and_tag_news, summarize_sentiment
+
+    with st.spinner("Fetching headlines and running LLM tagging (this takes ~30-50 seconds on first load, then cached)..."):
+        tagged_news = fetch_and_tag_news(max_to_tag=50)
+
+    if not tagged_news:
+        st.markdown(
+            '<div class="panel"><div class="panel-title">News</div>'
+            '<div style="color:#8B9DAE; padding:30px; text-align:center;">'
+            'Could not fetch news. Check Groq API key in .env and internet connection.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    # ============================================================
+    # KEYWORD FILTER
+    # ============================================================
+    col_search, col_count, col_blank = st.columns([3, 1.5, 2])
+
+    with col_search:
+        keyword = st.text_input(
+            "Filter by keyword",
+            placeholder="Type keywords to filter (e.g. OPEC, Russia, inventory)",
+            label_visibility="collapsed",
+            key="news_keyword_filter",
+        )
+
+    if keyword and keyword.strip():
+        kw_lower = keyword.strip().lower()
+        keywords = [k.strip() for k in kw_lower.replace(",", " ").split() if k.strip()]
+        filtered_news = []
+        for item in tagged_news:
+            title = item.get("title", "").lower()
+            reaction = item.get("tags", {}).get("reaction", "").lower()
+            if any(kw in title or kw in reaction for kw in keywords):
+                filtered_news.append(item)
+    else:
+        filtered_news = tagged_news
+
+    with col_count:
+        st.markdown(
+            f'<div style="padding:6px 0; color:#8B9DAE; font-size:0.78rem; '
+            f'font-family:JetBrains Mono;">'
+            f'{len(filtered_news)} of {len(tagged_news)} headlines'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # ============================================================
+    # SENTIMENT SUMMARY (recalculated on filtered set)
+    # ============================================================
+    sentiment = summarize_sentiment(filtered_news)
+    net = sentiment["net_score"]
+
+    if net > 15:
+        net_color = "#2ECC71"
+        net_label = "BULLISH BIAS"
+    elif net < -15:
+        net_color = "#E74C3C"
+        net_label = "BEARISH BIAS"
+    else:
+        net_color = "#8B9DAE"
+        net_label = "MIXED / NEUTRAL"
+
+    filter_note = f' (filtered by "{keyword}")' if keyword and keyword.strip() else ""
+
+    st.markdown(
+        f'<div class="panel">'
+        f'<div class="panel-title">★ LLM News Sentiment{filter_note}</div>'
+        f'<div style="display:flex; align-items:center; gap:24px;">'
+        f'<div>'
+        f'<span style="font-size:1.6rem; font-weight:700; color:{net_color}; '
+        f'font-family:JetBrains Mono;">{net:+.0f}</span>'
+        f'<span style="color:#8B9DAE; font-size:0.7rem; margin-left:6px;">net score</span>'
+        f'</div>'
+        f'<div style="padding:4px 12px; border-radius:4px; background:rgba(255,255,255,0.05); '
+        f'color:{net_color}; font-size:0.7rem; font-weight:700; letter-spacing:0.5px;">{net_label}</div>'
+        f'<div style="display:flex; gap:16px; font-size:0.78rem; font-family:JetBrains Mono;">'
+        f'<span style="color:#2ECC71;">▲ {sentiment["bullish"]} bullish</span>'
+        f'<span style="color:#E74C3C;">▼ {sentiment["bearish"]} bearish</span>'
+        f'<span style="color:#8B9DAE;">▬ {sentiment["neutral"]} neutral</span>'
+        f'</div>'
+        f'</div>'
+        f'<div style="color:#5B6E80; font-size:0.65rem; margin-top:8px; font-style:italic;">'
+        f'Headlines from FinancialJuice, tagged by Llama 3.3 70B (Groq). '
+        f'Net score = (bullish − bearish) / total.'
+        f'</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # ============================================================
+    # NEWS CARDS
+    # ============================================================
+    if not filtered_news:
+        st.markdown(
+            f'<div class="panel"><div class="panel-title">Tagged Headlines</div>'
+            f'<div style="color:#8B9DAE; padding:30px; text-align:center;">'
+            f'No headlines match "{keyword}". Try different keywords or clear the filter.'
+            f'</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    st.markdown(
+        '<div class="panel"><div class="panel-title">Tagged Headlines</div>',
+        unsafe_allow_html=True,
+    )
+
+    for item in filtered_news:
+        _render_news_card(item)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def _render_news_card(item: dict):
+    """Render a single tagged news card."""
+    tags = item["tags"]
+    direction = tags.get("direction", "neutral")
+    magnitude = tags.get("magnitude", "minor")
+    confidence = tags.get("confidence", 0.0)
+    reaction = tags.get("reaction", "")
+    contracts = tags.get("contracts", [])
+
+    arrows = {"bullish": "▲", "bearish": "▼", "neutral": "▬"}
+    arrow = arrows.get(direction, "▬")
+
+    dir_colors = {"bullish": "#2ECC71", "bearish": "#E74C3C", "neutral": "#8B9DAE"}
+    dir_color = dir_colors.get(direction, "#8B9DAE")
+
+    # Magnitude affects left border thickness
+    border_width = {"minor": "2px", "moderate": "3px", "major": "4px"}.get(magnitude, "2px")
+
+    contracts_html = ""
+    for c in contracts:
+        contracts_html += f'<span class="news-contract-tag">{c}</span>'
+
+    title = item.get("title", "")
+    published = item.get("published", "")
+
+    st.markdown(
+        f'<div class="news-card" style="border-left:{border_width} solid {dir_color};">'
+        f'<div class="news-card-top">'
+        f'<span class="news-direction" style="color:{dir_color};">{arrow} {direction.upper()}</span>'
+        f'<span class="news-magnitude">{magnitude}</span>'
+        f'<span class="news-confidence">conf {confidence:.0%}</span>'
+        f'<span class="news-contracts">{contracts_html}</span>'
+        f'</div>'
+        f'<div class="news-title">{title}</div>'
+        f'<div class="news-reaction">→ {reaction}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_news_compact(market_data: dict, max_items: int = 5):
+    """Compact news panel for the Markets tab right column."""
+    from news_data import fetch_and_tag_news
+
+    tagged_news = fetch_and_tag_news(max_to_tag=50)
+
+    if not tagged_news:
+        st.markdown(
+            '<div class="panel"><div class="panel-title">★ LLM-Tagged News</div>'
+            '<div style="color:#8B9DAE; padding:14px; text-align:center; font-size:0.8rem;">'
+            'News feed unavailable.</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    cards_html = ""
+    for item in tagged_news[:max_items]:
+        tags = item["tags"]
+        direction = tags.get("direction", "neutral")
+        arrows = {"bullish": "▲", "bearish": "▼", "neutral": "▬"}
+        arrow = arrows.get(direction, "▬")
+        dir_colors = {"bullish": "#2ECC71", "bearish": "#E74C3C", "neutral": "#8B9DAE"}
+        dir_color = dir_colors.get(direction, "#8B9DAE")
+
+        title = item.get("title", "")
+        # Truncate long titles for compact view
+        if len(title) > 90:
+            title = title[:87] + "..."
+
+        cards_html += (
+            f'<div class="news-compact-row" style="border-left:2px solid {dir_color};">'
+            f'<span class="news-compact-arrow" style="color:{dir_color};">{arrow}</span>'
+            f'<span class="news-compact-title">{title}</span>'
+            f'</div>'
+        )
+
+    st.markdown(
+        f'<div class="panel">'
+        f'<div class="panel-title">★ LLM-Tagged News</div>'
+        f'<div class="news-compact-list">{cards_html}</div>'
         f'</div>',
         unsafe_allow_html=True,
     )

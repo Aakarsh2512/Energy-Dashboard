@@ -82,12 +82,14 @@ render_top_strip(top_strip_items)
 # ============================================================
 # TABS
 # ============================================================
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+# Tabs
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, = st.tabs([
     "1. Markets",
-    "2. Fundamentals",
-    "3. News & Events",
-    "4. Models & Signals",
-    "5. Risk & Book",
+    "2. Inventory",
+    "3. Seasonality",
+    "4. News & Events",
+    "5. Models & Signals",
+    "6. Risk & Book",
     "★ Replay",
 ])
 
@@ -134,33 +136,40 @@ with tab1:
     with right:
         render_execution_panel()
 
+        from components import render_news_compact
+        render_news_compact(market_data, max_items=5)
+
         st.markdown(
-            '<div class="panel" style="min-height: 200px;">'
+            '<div class="panel" style="min-height: 100px;">'
             '<div class="panel-title">★ Signal Inbox</div>'
             '<div style="color:#8B9DAE; padding:20px 0; text-align:center; font-size:0.85rem;">'
-            'Consolidated alerts ranked by historical edge.<br>Coming Day 7.'
+            'Consolidated alerts ranked by historical edge.<br>Coming later.'
             '</div>'
             '</div>',
             unsafe_allow_html=True,
         )
 
 with tab2:
-    st.markdown("### Fundamentals & Flows")
-    st.info("Inventories, refinery data, OPEC nowcast, refinery yield-aware crack model. Coming soon.")
+    from components import render_inventory_tab
+    render_inventory_tab(market_data)
 
 with tab3:
-    st.markdown("### News & Events")
-    st.info("LLM-tagged news, event calendar, major firms & traders stance. Coming soon.")
+    from components import render_seasonality_tab
+    render_seasonality_tab(market_data)
 
-with tab4:
+with tab4 :
+    from components import render_news_tab
+    render_news_tab(market_data)
+    
+with tab5:
     st.markdown("### Models & Signals")
     st.info("Fair value, dealer gamma map, regime engine, physical-financial basis, signal inbox. Coming soon.")
 
-with tab5:
+with tab6:
     st.markdown("### Risk & Book")
     st.info("Positions, greeks, VaR, stress scenarios, behavioural anomaly detection. Coming soon.")
 
-with tab6:
+with tab7:
     st.markdown("### Replay Mode")
     st.info("Scrub through any past day with all data as it appeared. Coming soon.")
 
