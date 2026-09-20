@@ -50,8 +50,22 @@ def model_forward_curve(front_month_price: float,
     return curve
 
 
-def build_curve_for_instrument(name: str, market_data: dict) -> Optional[list]:
-    """Build a forward curve for a given instrument from market_data."""
+def build_curve_for_instrument(name: str, market_data: dict):
+    """
+    Build a forward curve for a given instrument from real settlement data
+    (Brent, WTI, ULSD, Gasoil), or fall back to parametric model.
+    """
+    # Try real settlement data first
+    try:
+        from settle_data import get_latest_curve, has_real_data
+        if has_real_data(name):
+            real_curve, _ = get_latest_curve(name)
+            if real_curve and len(real_curve) > 0:
+                return real_curve
+    except Exception as e:
+        print(f"[forward_curves] Real data unavailable for {name}, falling back to model: {e}")
+
+    # Fallback: parametric model
     if name not in CURVE_PARAMS:
         return None
 
@@ -70,11 +84,28 @@ def build_curve_for_instrument(name: str, market_data: dict) -> Optional[list]:
     )
 
 
-def build_curves_with_history(name: str, market_data: dict) -> Optional[dict]:
+def build_curves_with_history(name: str, market_data: dict):
     """
-    Build today's curve plus prior overlays using historical front-month prices.
-    Returns dict like {"today": curve, "yesterday": curve, "last_week": curve}
+    Build today's curve plus prior overlays (yesterday, last week, last month).
+    Uses real settlement data for Brent/WTI/ULSD/Gasoil, parametric model otherwise.
     """
+    # Try real settlement data first
+    try:
+        from settle_data import get_historical_curves, has_real_data
+        if has_real_data(name):
+            historical = get_historical_curves(name)
+            if historical and "today" in historical:
+                return {
+                    "today": historical["today"],
+                    "yesterday": historical.get("yesterday"),
+                    "last_week": historical.get("last_week"),
+                    "last_month": historical.get("last_month"),
+                    "latest_date": historical.get("latest_date"),
+                }
+    except Exception as e:
+        print(f"[forward_curves] Historical real data unavailable for {name}: {e}")
+
+    # Fallback: parametric model with shifted front months
     if name not in CURVE_PARAMS:
         return None
 
@@ -84,29 +115,20 @@ def build_curves_with_history(name: str, market_data: dict) -> Optional[dict]:
 
     history = instrument["history"]
     params = CURVE_PARAMS[name]
-
     curves = {}
 
-    # Today's curve
     today_front = history[-1]
     curves["today"] = model_forward_curve(today_front, **params)
 
-    # Yesterday
     if len(history) >= 2:
         yest_front = history[-2]
         curves["yesterday"] = model_forward_curve(yest_front, **params)
 
-    # Last week (5 trading days ago)
     if len(history) >= 6:
         lw_front = history[-6]
         curves["last_week"] = model_forward_curve(lw_front, **params)
 
     return curves
-
-
-# ============================================================
-# CALENDAR SPREADS
-# ============================================================
 
 def compute_calendar_spreads(curve: list) -> dict:
     """Compute key calendar spreads from a forward curve."""

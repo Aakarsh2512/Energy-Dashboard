@@ -29,7 +29,7 @@ load_css()
 
 # Auto-refresh every 60 seconds
 # This will re-run the entire app every 60 seconds, fetching fresh data
-st_autorefresh(interval=60_000, key="data_refresh")
+# st_autorefresh(interval=60_000, key="data_refresh")
 
 # ============================================================
 # HEADER
@@ -67,34 +67,53 @@ def build_top_strip_item(label: str, data_key: str, decimals: int = 2):
         "direction": item_data["direction"],
     }
 
+# Compute 3-2-1 crack live from real data for the strip
+from forward_curves import compute_inter_product_spreads
+_ips = compute_inter_product_spreads(market_data)
+_crack = _ips.get("3-2-1 Crack", {})
+
 top_strip_items = [
     build_top_strip_item("WTI", "WTI"),
     build_top_strip_item("Brent", "Brent"),
     build_top_strip_item("WTI-Brent", "WTI-Brent"),
     build_top_strip_item("Henry Hub", "Henry Hub", decimals=3),
-    {"label": "TTF",         "value": "—", "change": "", "direction": "neutral"},  # not free
-    {"label": "3-2-1 Crack", "value": "—", "change": "", "direction": "neutral"},  # to compute
+    build_top_strip_item("RBOB", "RBOB", decimals=3),
+    build_top_strip_item("ULSD", "ULSD", decimals=3),
+    {
+        "label": "3-2-1 Crack",
+        "value": f"{_crack['value']:.2f}" if _crack else "—",
+        "change": f"{(_crack['value']-_crack['previous']):+.2f}" if _crack else "",
+        "direction": ("up" if _crack and _crack['value'] > _crack['previous'] else "down" if _crack and _crack['value'] < _crack['previous'] else "neutral"),
+    },
     build_top_strip_item("DXY", "DXY"),
-    {"label": "Book Delta",  "value": "+47k bbl", "change": "demo", "direction": "neutral"},
 ]
+
 render_top_strip(top_strip_items)
 
 # ============================================================
 # TABS
 # ============================================================
 # Tabs
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, = st.tabs([
-    "1. Markets",
-    "2. Inventory",
-    "3. Seasonality",
-    "4. News & Events",
-    "5. Models & Signals",
-    "6. Risk & Book",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    "Markets",
+    "Inventory",
+    "Seasonality",
+    "News & Events",
+    "Spreads, Flies & Correlations",
+    "★ Strategy Lab",
     "★ Replay",
 ])
 
 with tab1:
-    from components import render_price_grid, render_macro_panel, render_execution_panel
+    from components import (
+        render_price_grid,
+        render_macro_panel,
+        render_live_chart_panel,
+        render_forward_curve_with_selector,
+        render_alert_strip,
+        render_news_compact,
+        render_key_correlations_mini,
+    )
 
     price_grid_instruments = [
         {"name": "WTI",       "label": "WTI Crude",        "decimals": 2},
@@ -105,49 +124,35 @@ with tab1:
         {"name": "WTI-Brent", "label": "WTI-Brent Spread", "decimals": 2},
     ]
 
-    # Three-column layout matching the proposal mockup
-    left, center, right = st.columns([1.1, 1.4, 0.9])
+    # ============================================================
+    # THREE-COLUMN LAYOUT
+    # Left: Price Grid + Macro
+    # Center: TradingView Live Chart + Forward Curve (with selector)
+    # Right: Alerts + News + Key Correlations
+    # ============================================================
+    left, center, right = st.columns([1.1, 1.7, 0.85])
 
     with left:
         render_price_grid(market_data, price_grid_instruments)
         render_macro_panel(market_data)
+        # Key correlations summary
+        render_key_correlations_mini()
 
     with center:
-        from components import (
-            render_forward_curve_panel,
-            render_calendar_spreads_panel,
-            render_interproduct_spreads_panel,
-        )
+        # Live TradingView chart on top
+        render_live_chart_panel()
 
-        render_forward_curve_panel(market_data)
-        render_calendar_spreads_panel(market_data)
-        render_interproduct_spreads_panel(market_data)
-
-        st.markdown(
-            '<div class="panel" style="min-height: 100px;">'
-            '<div class="panel-title">Implied Vol Surface</div>'
-            '<div style="color:#8B9DAE; padding:20px 0; text-align:center; font-size:0.85rem;">'
-            'Vol surface, skew, term structure. Coming Day 5.'
-            '</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        # Forward curve below with mode selector
+        render_forward_curve_with_selector(market_data)
 
     with right:
-        render_execution_panel()
+        # Live Alerts (the highlight feature)
+        render_alert_strip(market_data, max_alerts=6)
 
-        from components import render_news_compact
+        # Compact news feed
         render_news_compact(market_data, max_items=5)
 
-        st.markdown(
-            '<div class="panel" style="min-height: 100px;">'
-            '<div class="panel-title">★ Signal Inbox</div>'
-            '<div style="color:#8B9DAE; padding:20px 0; text-align:center; font-size:0.85rem;">'
-            'Consolidated alerts ranked by historical edge.<br>Coming later.'
-            '</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        
 
 with tab2:
     from components import render_inventory_tab
@@ -160,19 +165,19 @@ with tab3:
 with tab4 :
     from components import render_news_tab
     render_news_tab(market_data)
-    
+
 with tab5:
-    st.markdown("### Models & Signals")
-    st.info("Fair value, dealer gamma map, regime engine, physical-financial basis, signal inbox. Coming soon.")
+    from components import render_spreads_tab
+    render_spreads_tab(market_data)
 
 with tab6:
-    st.markdown("### Risk & Book")
-    st.info("Positions, greeks, VaR, stress scenarios, behavioural anomaly detection. Coming soon.")
+    from components import render_strategies_tab
+    render_strategies_tab(market_data)
 
 with tab7:
-    st.markdown("### Replay Mode")
-    st.info("Scrub through any past day with all data as it appeared. Coming soon.")
-
+    from components import render_replay_tab
+    render_replay_tab(market_data)
+    
 # ============================================================
 # STATUS BAR
 # ============================================================

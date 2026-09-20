@@ -1087,3 +1087,548 @@ h3 {
 .stTextInput [data-baseweb="input"]:focus-within {
     border-color: #2E75B6 !important;
 }
+/* ============================================================
+   POLISH — improved spacing and visual hierarchy
+   ============================================================ */
+
+/* Tighten panel padding for denser layout */
+.panel {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.panel-title {
+    margin-bottom: 12px;
+    padding-bottom: 7px;
+    font-size: 0.78rem;
+    letter-spacing: 1.2px;
+}
+
+/* Better gap between columns */
+.stColumns > div {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+/* Stronger z-score badge presence */
+.zscore-badge {
+    padding: 4px 9px;
+    border-radius: 5px;
+}
+
+.zscore-value {
+    font-size: 0.82rem;
+}
+
+.zscore-label {
+    font-size: 0.55rem;
+}
+
+/* Price card hover feel */
+.price-card-compact {
+    transition: all 0.2s ease;
+}
+
+.price-card-compact:hover {
+    transform: translateY(-1px);
+    border-color: #2E75B6;
+    box-shadow: 0 2px 8px rgba(46, 117, 182, 0.15);
+}
+
+/* Better forward curve panel breathing room */
+.js-plotly-plot {
+    margin-top: -4px;
+}
+
+/* Subtle status bar improvement */
+.status-bar {
+    margin-top: 16px;
+    padding: 10px 18px;
+    border-radius: 6px;
+}
+
+/* Macro tiles slightly larger numbers */
+.macro-tile-value {
+    font-size: 1.0rem;
+}
+/* ============================================================
+   SPREADS, FLIES & CORRELATIONS TAB
+   ============================================================ */
+
+.spread-list, .fly-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.spread-row {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 1.4fr;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.spread-name {
+    color: #C3D0DC;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.spread-value {
+    color: #E5EBF0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.spread-change {
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.spread-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Fly panel layout */
+.fly-row {
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.fly-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.fly-name {
+    color: #C3D0DC;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.fly-shape {
+    color: #8B9DAE;
+    font-size: 0.65rem;
+    font-style: italic;
+    letter-spacing: 0.3px;
+}
+
+.fly-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.fly-value {
+    color: #E5EBF0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.fly-change {
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.fly-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: auto;
+}
+/* ============================================================
+   CORRELATION PANELS
+   ============================================================ */
+
+.corr-pair-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.corr-pair-row {
+    display: grid;
+    grid-template-columns: 1.4fr 0.7fr 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.corr-pair-name {
+    color: #C3D0DC;
+    font-size: 0.74rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.corr-pair-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+}
+
+.corr-pair-tag {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    color: white;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scrollbar styling for correlation lists */
+.corr-pair-list::-webkit-scrollbar {
+    width: 6px;
+}
+.corr-pair-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+.corr-pair-list::-webkit-scrollbar-thumb {
+    background: rgba(139, 157, 174, 0.3);
+    border-radius: 3px;
+}
+.corr-pair-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 157, 174, 0.5);
+}
+/* ============================================================
+   ALERT STRIP (Markets tab, right column)
+   ============================================================ */
+
+.alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.alert-card {
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 4px;
+}
+
+.alert-card-pulse {
+    animation: alert-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes alert-pulse {
+    0%, 100% {
+        background: rgba(231, 76, 60, 0.08);
+    }
+    50% {
+        background: rgba(231, 76, 60, 0.18);
+    }
+}
+
+.alert-row-top {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.alert-sev {
+    font-size: 0.56rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 2px;
+    border: 1px solid;
+    letter-spacing: 0.4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.alert-cat {
+    font-size: 0.56rem;
+    font-weight: 600;
+    color: #8B9DAE;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.alert-time {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: #5B6E80;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.alert-headline {
+    color: #E5EBF0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.alert-detail {
+    color: #8B9DAE;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Alert count badges in panel header */
+.alert-counts-row {
+    display: flex;
+    gap: 4px;
+}
+
+.alert-count {
+    font-size: 0.58rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+}
+
+.alert-count-critical {
+    background: rgba(231, 76, 60, 0.2);
+    color: #E74C3C;
+    border: 1px solid rgba(231, 76, 60, 0.5);
+}
+
+.alert-count-high {
+    background: rgba(230, 126, 34, 0.15);
+    color: #E67E22;
+    border: 1px solid rgba(230, 126, 34, 0.4);
+}
+
+.alert-count-medium {
+    background: rgba(241, 196, 15, 0.12);
+    color: #F1C40F;
+    border: 1px solid rgba(241, 196, 15, 0.35);
+}
+
+/* Alert list scrollbar */
+.alert-list::-webkit-scrollbar {
+    width: 5px;
+}
+.alert-list::-webkit-scrollbar-thumb {
+    background: rgba(139, 157, 174, 0.3);
+    border-radius: 3px;
+}
+
+/* ============================================================
+   KEY CORRELATIONS MINI-PANEL
+   ============================================================ */
+
+.key-corr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.key-corr-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 9px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.key-corr-pair {
+    color: #C3D0DC;
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.key-corr-val {
+    font-size: 0.74rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.key-corr-divider {
+    color: #5B6E80;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    margin: 6px 0 2px 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+/* ============================================================
+   PILL-STYLE RADIO BUTTONS (spread/fly selector)
+   ============================================================ */
+
+div[data-testid="stRadio"] > div {
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+div[data-testid="stRadio"] label {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 5px 14px !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    margin: 0 !important;
+}
+
+div[data-testid="stRadio"] label:hover {
+    background: rgba(46, 117, 182, 0.12);
+    border-color: rgba(46, 117, 182, 0.4);
+}
+
+div[data-testid="stRadio"] label[data-checked="true"] {
+    background: rgba(46, 117, 182, 0.25);
+    border-color: #2E75B6;
+}
+
+div[data-testid="stRadio"] label p {
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    color: #C3D0DC !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+/* ============================================================
+   REPLAY MODE STYLING
+   ============================================================ */
+
+.replay-tile-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.replay-tile {
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 5px;
+    border-left: 2px solid #2E75B6;
+}
+
+.replay-tile-label {
+    color: #8B9DAE;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.replay-tile-value {
+    color: #E5EBF0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.replay-tile-change {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+}
+
+.replay-row-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.replay-row {
+    display: grid;
+    grid-template-columns: 0.8fr 0.9fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 11px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.replay-row-name {
+    color: #C3D0DC;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.replay-row-val {
+    color: #E5EBF0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.replay-row-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 3px 7px;
+    border-radius: 3px;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.replay-alerts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+}
+
+/* Replay button polish */
+div[data-testid="column"] button[kind="secondary"] {
+    background: rgba(155, 89, 182, 0.08) !important;
+    border: 1px solid rgba(155, 89, 182, 0.25) !important;
+    color: #C3D0DC !important;
+    font-size: 0.72rem !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+div[data-testid="column"] button[kind="secondary"]:hover {
+    background: rgba(155, 89, 182, 0.18) !important;
+    border-color: rgba(155, 89, 182, 0.6) !important;
+}
+/* ============================================================
+   FLASHING EVENT BANNER (Replay Mode)
+   ============================================================ */
+
+.event-banner-flash {
+    background: linear-gradient(135deg, #E74C3C, #C0392B);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 16px rgba(231, 76, 60, 0.6);
+    animation: event-flash 0.7s ease-in-out infinite;
+}
+
+@keyframes event-flash {
+    0%, 100% {
+        background: linear-gradient(135deg, #E74C3C, #C0392B);
+        box-shadow: 0 0 16px rgba(231, 76, 60, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        background: linear-gradient(135deg, #C0392B, #922B21);
+        box-shadow: 0 0 28px rgba(231, 76, 60, 0.9);
+        transform: scale(1.005);
+    }
+}
